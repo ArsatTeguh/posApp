@@ -35,7 +35,7 @@ router.delete("/detail/:id", deleteDetailProduct);
 
 // router Users
 router.get("/data", verifyToken, getUser);
-router.post("/", Register);
+router.post("/register", Register);
 router.post("/login", Login);
 router.get("/token", refreshToken);
 router.delete("/logout", logOut);

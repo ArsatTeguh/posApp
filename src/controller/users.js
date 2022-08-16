@@ -104,5 +104,5 @@ export const logOut = async (req, res) => {
     }
   );
   res.clearCookie("token");
-  return res.sendStatus(200);
+  return res.status(200).json({msg: "Anda Telah Logout"});
 };

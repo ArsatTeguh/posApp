@@ -20,3 +20,8 @@ const modelUser = db.define('user',{
 });
 
 export default modelUser;
+
+
+// (async () => {
+//   await db.sync();
+// })()

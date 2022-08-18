@@ -15,6 +15,7 @@ import {
 import { getUser, Register, Login, logOut } from "../controller/users.js";
 import verifyToken from "../midleware/index.js";
 import { refreshToken } from "./verifyToken.js";
+import { isVerify } from "../controller/VerifyEmail.js";
 
 
 
@@ -39,5 +40,8 @@ router.post("/register", Register);
 router.post("/login", Login);
 router.get("/token", refreshToken);
 router.delete("/logout", logOut);
+
+// // router verifyEmail 
+router.post("/verify/:uniqueId", isVerify )
 
 export default router;

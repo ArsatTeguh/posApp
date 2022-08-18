@@ -1,6 +1,13 @@
 import modelUser from "../config/modelDatabase/users.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
+import { v4 as uuidv4 } from "uuid";
+import userVerify from "../config/modelDatabase/userVerify.js";
+
+// nodemailer
+
+
 
 export const getUser = async (req, res) => {
   try {
@@ -11,19 +18,47 @@ export const getUser = async (req, res) => {
   }
 };
 
+// == REGISTER == 
 export const Register = async (req, res) => {
   const { nama, email, password, confpassword } = req.body;
+  const emailAdd = await modelUser.findOne({where:{ email : email}})
+
+  if(emailAdd) return res.json({msg: "email anda telah terdaftar"})
+
   if (password !== confpassword)
     return res.status(400).json({ msg: "Password Tidak Sama" });
+
   const salt = await bcrypt.genSalt();
   const hasPassword = await bcrypt.hash(password, salt);
+
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.AUTH_EMAIL,
+      pass: process.env.AUTH_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.AUTH_EMAIL,
+    to: email,
+    subject: "Please.. Verify your account ✔",
+    html: `<p> Untuk menghindari spam pendaftaran akun kami menyarankan anda untuk mengaktifkan akun baru anda </p> <b> <a href="https://www.w3schools.com">Visit W3Schools</a> </b>`,
+  });
+
   try {
-    await modelUser.create({
+   const user = await modelUser.create({
       nama: nama,
       email: email,
       password: hasPassword,
+      isActivasi:false
     });
-    res.status(200).json({ msg: "Register Berhasil" });
+    const uniqueId = uuidv4() + user.id;
+    await userVerify.create({
+      uniqueId: uniqueId,
+      emailUser: email,
+    });
+    res.status(200).json({msg: 'Berhasil mendaftar akun, Silahkan aktivasi akun anda', data: uniqueId})
   } catch (e) {
     console.log(e);
   }
@@ -87,22 +122,26 @@ export const Login = async (req, res) => {
 };
 
 export const logOut = async (req, res) => {
-  const refreshToken = req.cookies.token;
-  if (!refreshToken) return res.sendStatus(204);
-  const user = await modelUser.findOne({
-    where: {
-      refresh_token: refreshToken,
-    },
-  });
-  if (!user) return res.sendStatus(204);
-  await modelUser.update(
-    { refresh_token: null },
-    {
+  try {
+    const refreshToken = req.cookies.token;
+    if (!refreshToken) return res.sendStatus(204);
+    const user = await modelUser.findOne({
       where: {
-        id: user.id,
+        refresh_token: refreshToken,
       },
-    }
-  );
-  res.clearCookie("token");
-  return res.status(200).json({msg: "Anda Telah Logout"});
+    });
+    if (!user) return res.sendStatus(204);
+    await modelUser.update(
+      { refresh_token: null },
+      {
+        where: {
+          id: user.id,
+        },
+      }
+    );
+    res.clearCookie("token");
+    return res.status(200).json({ msg: "Anda Telah Logout" });
+  } catch (e) {
+    console.log(e.message);
+  }
 };

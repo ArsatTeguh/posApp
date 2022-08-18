@@ -12,6 +12,10 @@ const modelUser = db.define('user',{
     'password': {
         type : DataTypes.STRING,
     },
+    'isActivasi': {
+        type : DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
     'refresh_token': {
         type : DataTypes.TEXT,
     },
@@ -23,5 +27,5 @@ export default modelUser;
 
 
 // (async () => {
-//   await db.sync();
-// })()
+//     await db.sync();
+//   })()

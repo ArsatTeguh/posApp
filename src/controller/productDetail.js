@@ -6,7 +6,7 @@ export const getDetail = async (req, res) => {
     const productDetail = await modelProductDetail.findAll();
     res.status(200).json({ data: productDetail });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -25,7 +25,7 @@ export const saveProductDetail = async (req, res) => {
     const deskripsi = req.body.deskripsi;
     const variant = req.body.variant;
     const id_products = product.id;
-    
+
     const detailProduct = await modelProductDetail.create({
       id_products: id_products,
       deskripsi: deskripsi,
@@ -36,7 +36,7 @@ export const saveProductDetail = async (req, res) => {
       data: detailProduct,
     });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -56,19 +56,19 @@ export const updateProductDetail = async (req, res) => {
   try {
     await modelProductDetail.update(
       {
-        id_products,
-        deskripsi,
-        variant,
+        id_products : id_products,
+        deskripsi: deskripsi,
+        variant:variant
       },
       {
         where: {
-          id: product.id,
+          id_products: product.id,
         },
       }
     );
     res.status(200).json({ msg: "product detail diubah" });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -79,14 +79,14 @@ export const deleteDetailProduct = async (req, res) => {
         id: req.params.id,
       },
     });
-
+    if (!product) return res.status(404).json({ msg: "products tidak ada" });
     await modelProductDetail.destroy({
       where: {
-        id: product.id,
+        id_products: product.id,
       },
     });
     res.status(200).json({ msg: "Data Detail Dihapus" });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };

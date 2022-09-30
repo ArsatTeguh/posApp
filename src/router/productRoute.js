@@ -24,15 +24,15 @@ const router = express.Router();
 // router Product
 router.get("/products", getProducts);
 router.get("/products/:id", getProductsByid);
-router.post("/products", saveProduct);
-router.put("/products/:id", updateProduct);
-router.delete("/products/:id", deleteProduct);
+router.post("/products",verifyToken, saveProduct);
+router.patch("/products/:id", verifyToken, updateProduct);
+router.delete("/products/:id",verifyToken, deleteProduct);
 
 // router ProductDetail
 router.get("/detail", getDetail);
-router.post("/detail/:id", saveProductDetail);
-router.put("/detail/:id", updateProductDetail);
-router.delete("/detail/:id", deleteDetailProduct);
+router.post("/detail/:id", verifyToken, saveProductDetail);
+router.patch("/detail/:id", verifyToken, updateProductDetail);
+router.delete("/detail/:id", verifyToken, deleteDetailProduct);
 
 // router Users
 router.get("/data", verifyToken, getUser);

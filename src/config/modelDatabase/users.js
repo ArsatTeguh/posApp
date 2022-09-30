@@ -1,8 +1,11 @@
-import {Sequelize} from "sequelize"
+import {Sequelize, STRING} from "sequelize"
 import db from "../database/index.js";
 
 const DataTypes = Sequelize
 const modelUser = db.define('user',{
+    '_idUsers': {
+        type: STRING
+    },
     'nama': {
         type : DataTypes.STRING,
     },
@@ -19,6 +22,7 @@ const modelUser = db.define('user',{
     'refresh_token': {
         type : DataTypes.TEXT,
     },
+
 },{
     freezeTableName: true
 });

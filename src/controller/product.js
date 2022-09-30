@@ -15,7 +15,7 @@ export const getProducts = async (req, res) => {
     if (!products) throw new Error("Product empty");
     res.status(200).json({ msg: "Get Products Succsessfuly", data: products });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -34,7 +34,7 @@ export const getProductsByid = async (req, res) => {
     if (!product) throw new Error("Product empty");
     res.json(product);
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -52,9 +52,9 @@ export const saveProduct = async (req, res) => {
 
   if (!allowedType.includes(extention.toLowerCase()))
     // cek format image
-    return res.status(422).json({ msg: "Gambar Harus .jpg .jpeg .png" });
+    return res.status(400).json({ msg: "Gambar Harus .jpg .jpeg .png" });
   if (fileSize > 2000000)
-    return res.json({ msg: "Gambar kebesaran boy maksimal 2MB boy" }); // cek max size image
+    return res.status(400).json({ msg: "Gambar kebesaran boy maksimal 2MB boy" }); // cek max size image
 
   file.mv(`./public/images/${fileName}`, async (err) => {
     if (err) return res.json({ msg: err.message }); // memasukan image ke folder static public
@@ -68,7 +68,7 @@ export const saveProduct = async (req, res) => {
     });
     res.status(201).json({ msg: "Data Berhasil Ditambahkan" });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).json({msg: 'Something Wrong'})
   }
 };
 
@@ -81,10 +81,10 @@ export const updateProduct = async (req, res) => {
   let fileName = "";
 
   if (req.files === null) {
-    // jika update deengan image
-    fileName = modelProduct.image;
+    // jika user tidak meng update image ambil data image sebelumnya dari tabases
+    fileName = product.image;
   } else {
-    // jika update tanpa image
+    // jika user meng update imaganya
 
     // defenisikan image baru
     const file = req.files.file;
@@ -125,7 +125,7 @@ export const updateProduct = async (req, res) => {
     );
     res.status(200).json({ msg: "Data berhasil di ubah" });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };
 
@@ -143,7 +143,7 @@ export const deleteProduct = async (req, res) => {
   if (!product) return res.status(404).json({ msg: "data Not Found" });
 
   try {
-    if(productDetail.id_products > 0){
+    if(productDetail){
       await modelProductDetail.destroy({
         where: {
           id: productDetail.id_products,
@@ -163,7 +163,7 @@ export const deleteProduct = async (req, res) => {
 
 
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 
 };

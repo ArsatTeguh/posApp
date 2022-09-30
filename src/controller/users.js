@@ -5,25 +5,22 @@ import nodemailer from "nodemailer";
 import { v4 as uuidv4 } from "uuid";
 import userVerify from "../config/modelDatabase/userVerify.js";
 
-// nodemailer
-
-
-
 export const getUser = async (req, res) => {
   try {
     const user = await modelUser.findAll();
     res.status(200).json({ msg: "Get User Berhasil", data: user });
   } catch (e) {
-    console.log(e);
+    res.status(404).send(e)
   }
 };
 
-// == REGISTER == 
+// == REGISTER ==
 export const Register = async (req, res) => {
   const { nama, email, password, confpassword } = req.body;
-  const emailAdd = await modelUser.findOne({where:{ email : email}})
+  const _idUsers = uuidv4();
+  const emailAdd = await modelUser.findOne({ where: { email: email } });
 
-  if(emailAdd) return res.json({msg: "email anda telah terdaftar"})
+  if (emailAdd) return res.json({ msg: "email anda telah terdaftar" });
 
   if (password !== confpassword)
     return res.status(400).json({ msg: "Password Tidak Sama" });
@@ -47,20 +44,24 @@ export const Register = async (req, res) => {
   });
 
   try {
-   const user = await modelUser.create({
+    const user = await modelUser.create({
+      _idUsers: _idUsers,
       nama: nama,
       email: email,
       password: hasPassword,
-      isActivasi:false
+      isActivasi: false,
     });
-    const uniqueId = uuidv4() + user.id;
+    const uniqueId = uuidv4() + _idUsers;
     await userVerify.create({
       uniqueId: uniqueId,
       emailUser: email,
     });
-    res.status(200).json({msg: 'Berhasil mendaftar akun, Silahkan aktivasi akun anda', data: uniqueId})
+    res.status(200).json({
+      msg: "Berhasil mendaftar akun, Silahkan aktivasi akun anda",
+      data: uniqueId,
+    });
   } catch (e) {
-    console.log(e);
+    res.status(404).send(e)
   }
 };
 
@@ -68,11 +69,11 @@ export const Login = async (req, res) => {
   try {
     // Cek Email
     const user = await modelUser.findOne({ where: { email: req.body.email } });
-    if (!user) return res.status(400).json({ msg: "Email Anda Salah" });
+    if (!user) return res.status(400).json({ msg: "Email salah!" });
 
     // Cek Password
     const match = await bcrypt.compare(req.body.password, user.password);
-    if (!match) return res.status(400).json({ msg: "Password Salah" });
+    if (!match) return res.status(400).json({ msg: "Password salah!" });
 
     // mengambil data dari databases jika user berhasil login
     const userid = user.id;
@@ -108,16 +109,16 @@ export const Login = async (req, res) => {
     );
 
     // membuat cookie untuk menyimpan tokennya di sisi client
-    res.cookie("token", refreshToken, {
+    res.cookie('token', refreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000,
       secure: true,
     });
 
     // setelah semua berhasil, tampilkan respons token nya
-    res.json({ accesToken });
+    res.status(200).json({ accesToken });
   } catch (e) {
-    res.status(400).json(e);
+    res.status(404).json(e);
   }
 };
 
@@ -142,6 +143,6 @@ export const logOut = async (req, res) => {
     res.clearCookie("token");
     return res.status(200).json({ msg: "Anda Telah Logout" });
   } catch (e) {
-    console.log(e.message);
+    res.status(404).send(e)
   }
 };

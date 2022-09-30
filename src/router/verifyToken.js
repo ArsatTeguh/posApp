@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 export const refreshToken = async(req,res) => {
     try {
        const refreshToken = req.cookies.token
+       
         if(!refreshToken) return res.sendStatus(401);
         const user = await modelUser.findOne({
             where : {
